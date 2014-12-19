@@ -10,7 +10,7 @@ func main() {
 	r := mercury.New(Root)
 	r.Handle("GET", "/users", Users)
 	r.Handle("GET", "/users/:name", UserShow)
-	//r.Handle("GET", "/users/:name/blog", UserBlogShow)
+	r.Handle("GET", "/users/:name/blog/new", UserBlogShow)
 	r.Handle("GET", "/blogs", Blogs)
 	r.Handle("GET", "/blogs/:id", BlogShow)
 	http.ListenAndServe(":8080", r)
@@ -27,6 +27,7 @@ func Users(w http.ResponseWriter, r *http.Request, params map[string]string) {
 func UserShow(w http.ResponseWriter, r *http.Request, params map[string]string) {
 	fmt.Fprintf(w, "Hi %s", params["name"])
 }
+
 func UserBlogShow(w http.ResponseWriter, r *http.Request, params map[string]string) {
 	fmt.Fprintf(w, "This is %s Blog", params["name"])
 }
