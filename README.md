@@ -1,4 +1,4 @@
-mercury
+helm
 =======
 
 yet another golang router (mux). Simple and fast.
@@ -11,7 +11,7 @@ yet another golang router (mux). Simple and fast.
 
 ## Installation
 
-`go get github.com/acmacalister/mercury`
+`go get github.com/acmacalister/helm`
 
 ## Example
 
@@ -20,12 +20,12 @@ package main
 
 import (
   "fmt"
-  "github.com/acmacalister/mercury"
+  "github.com/acmacalister/helm"
   "net/http"
 )
 
 func main() {
-  r := mercury.New(Root)
+  r := helm.New(Root)
   r.Handle("GET", "/users", Users)
   r.Handle("GET", "/users/:name", UserShow)
   r.Handle("GET", "/users/:name/blog/new", UserBlogShow)
@@ -61,7 +61,7 @@ func BlogShow(w http.ResponseWriter, r *http.Request, params map[string]string) 
 
 ## Docs
 
-[godoc](http://godoc.org/github.com/acmacalister/mercury)
+[godoc](http://godoc.org/github.com/acmacalister/helm)
 
 ## Example Project
 

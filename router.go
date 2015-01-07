@@ -1,34 +1,35 @@
-package mercury
+package helm
 
 import (
 	"net/http"
+	"net/url"
 	"strings"
 )
 
 const (
-	GET     = "GET"
-	HEAD    = "HEAD"
-	POST    = "POST"
-	PUT     = "PUT"
-	PATCH   = "PATCH"
-	DELETE  = "DELETE"
-	RESTFUL = "RESTFUL"
+	GET    = "GET"
+	HEAD   = "HEAD"
+	POST   = "POST"
+	PUT    = "PUT"
+	PATCH  = "PATCH"
+	DELETE = "DELETE"
 )
 
 /// Handle is just like "net/http" Handlers, only takes params.
-type Handle func(http.ResponseWriter, *http.Request, map[string]string)
+type Handle func(http.ResponseWriter, *http.Request, url.Values)
 
 // Router name says it all.
 type Router struct {
-	tree *node
+	tree        *node
+	rootHandler Handle
 }
 
 // New creates a new router. Take the root/fall through route
 // like how the default mux works. Only difference is in this case,
 // you have to specific one.
 func New(rootHandler Handle) *Router {
-	node := node{handler: rootHandler, component: "/"}
-	return &Router{tree: &node}
+	node := node{component: "/", isNamedParam: false, methods: make(map[string]Handle)}
+	return &Router{tree: &node, rootHandler: rootHandler}
 }
 
 // Handle takes an http handler, method and pattern for a route.
@@ -69,19 +70,14 @@ func (r *Router) DELETE(path string, handler Handle) {
 	r.Handle(DELETE, path, handler)
 }
 
-// Restful just like rails "resources" it handles all the routes.
-// Could be useful if you are wanting to use an MVC design (add controllers).
-func (r *Router) Restful(path string, handler Handle) {
-	r.Handle(RESTFUL, path, handler)
-}
-
 // Needed by "net/http" to handle http requests.
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	params := make(map[string]string) // need to add merging form params in.
+	req.ParseForm()
+	params := req.Form
 	node, _ := r.tree.traverse(strings.Split(req.URL.Path, "/")[1:], params)
-	if (req.Method == node.method || node.method == RESTFUL) && node.handler != nil {
-		node.handler(w, req, params)
+	if handler := node.methods[req.Method]; handler != nil {
+		handler(w, req, params)
 	} else {
-		r.tree.handler(w, req, params)
+		r.rootHandler(w, req, params)
 	}
 }
