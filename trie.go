@@ -5,34 +5,44 @@ import (
 	"strings"
 )
 
+// route is a handler for an HTTP verb, plus it's middleware (if any).
+type route struct {
+	handler    Handle
+	middleware []Handle
+}
+
 // node represents a struct of each node in the tree.
 type node struct {
 	children     []*node
 	component    string
 	isNamedParam bool
-	methods      map[string]Handle
+	methods      map[string]*route
 }
 
 // addNode - adds a node to our tree. Will add multiple nodes if path
 // can be broken up into multiple components. Those nodes will have no
 // handler implemented and will fall through to the default handler.
-func (n *node) addNode(method, path string, handler Handle) {
+func (n *node) addNode(method, path string, handler Handle, middleware ...Handle) {
 	components := strings.Split(path, "/")[1:]
 	count := len(components)
 
 	for {
 		aNode, component := n.traverse(components, nil)
 		if aNode.component == component && count == 1 { // update an existing node.
-			aNode.methods[method] = handler
+			r := route{handler: handler}
+			r.middleware = append(r.middleware, middleware...)
+			aNode.methods[method] = &r
 			return
 		}
-		newNode := node{component: component, isNamedParam: false, methods: make(map[string]Handle)}
+		newNode := node{component: component, isNamedParam: false, methods: make(map[string]*route)}
 
 		if len(component) > 0 && component[0] == ':' { // check if it is a named param.
 			newNode.isNamedParam = true
 		}
 		if count == 1 { // this is the last component of the url resource, so it gets the handler.
-			newNode.methods[method] = handler
+			r := route{handler: handler}
+			r.middleware = append(r.middleware, middleware...)
+			newNode.methods[method] = &r
 		}
 		aNode.children = append(aNode.children, &newNode)
 		count--
