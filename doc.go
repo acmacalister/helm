@@ -19,7 +19,7 @@
 //      r.Handle("GET", "/users", Users, AuthMiddleware)          // local/route specific middleware that only runs on this route.
 //      r.Handle("GET", "/users/:name", UserShow, AuthMiddleware) // same as above, but with a named param.
 //      r.Handle("GET", "/users/:name/blog/new", UserBlogShow, AuthMiddleware)
-//      r.GET("/blogs", "/blogs") // convenience method for HTTP verb. Beside GET, there is the whole RESTful gang (POST, PUT, PATCH, DELETE, etc)
+//      r.GET("/blogs", Blogs) // convenience method for HTTP verb. Beside GET, there is the whole RESTful gang (POST, PUT, PATCH, DELETE, etc)
 //      r.GET("/blogs/:id", BlogShow)
 //      http.ListenAndServe(":8080", r) // use our router as the mux!
 //    }
