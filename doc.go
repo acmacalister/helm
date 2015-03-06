@@ -1,4 +1,7 @@
 // helm is a simple, fast and minimalist router for writing web applications in Go. It builds on top of `net/http` and aims to be an elegant addition, by removing some of the cumbersome work involved with using the default `net/http` mux.
+//
+// For more information, see https://github.com/acmacalister/helm
+//
 // package main
 //
 // import (
@@ -60,3 +63,4 @@
 // func BlogShow(w http.ResponseWriter, r *http.Request, params url.Values) {
 //   fmt.Fprintf(w, "Blog number: %s", params["id"])
 // }
+package helm
