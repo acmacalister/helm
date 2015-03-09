@@ -1,7 +1,7 @@
 helm
 =======
 
-helm is a simple, fast and minimalist router for writing web applications in Go. It builds on top of `net/http` and aims to be an elegant addition, by removing some of the cumbersome work involved with using the default `net/http` mux.
+helm is a simple, fast and minimalist router for writing web applications in Go. It builds on top of `net/http` and aims to be an elegant addition by removing some of the cumbersome work involved with using the default `net/http` mux.
 
 ## Features
 
@@ -91,7 +91,7 @@ Check out the example directory for a simple example.
 
 ## Why?
 
-Why write helm? There are already a number of great routers and middleware out there for Go, but being that the router and middleware are decoupled parts, made working with them feel clumsy to me, compared to more mature web frameworks and libraries in other languages. Helm's goal is eventually provide a minimalist set of tools to make working with `net/http` a breeze, much like express.js does for node.js.
+There are already a number of great routers and middleware out there for Go, but since most of them are either middlware or a router, getting them to work together felt clumsy to me. Helm's goal is to provide a minimalist set of tools to make building web services a breeze.
 
 ## TODOs
 
