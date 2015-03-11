@@ -9,10 +9,11 @@ import (
 )
 
 func main() {
-	r := helm.New(FallThrough)                    // Our fallthrough route.
-	r.AddMiddleware(FooMiddleware, BarMiddleware) // add global/router level middleware to run on every route.
+	r := helm.New(FallThrough)                                              // Our fallthrough route.
+	r.AddMiddleware(FooMiddleware, BarMiddleware, helm.Static, helm.Logger) // add global/router level middleware to run on every route.
 	r.Handle("GET", "/", Root)
-	r.Handle("GET", "/users", Users, AuthMiddleware)          // local/route specific middleware that only runs on this route.
+	r.Handle("GET", "/users", Users, AuthMiddleware) // local/route specific middleware that only runs on this route.
+	r.GET("/users/edit", Root)
 	r.Handle("GET", "/users/:name", UserShow, AuthMiddleware) // same as above, but with a named param.
 	r.Handle("GET", "/users/:name/blog/new", UserBlogShow, AuthMiddleware)
 	r.GET("/blogs", Blogs) // convenience method for HTTP verb. Beside GET, there is the whole RESTful gang (POST, PUT, PATCH, DELETE, etc)
