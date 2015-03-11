@@ -101,7 +101,9 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 	node, _ := r.tree.traverse(strings.Split(req.URL.Path, "/")[1:], params)
 	if handler := node.methods[req.Method]; handler != nil {
-		runMiddleware(w, req, params, handler.middleware...)
+		if !runMiddleware(w, req, params, handler.middleware...) {
+			return
+		}
 		handler.handler(w, req, params)
 	} else {
 		r.rootHandler(w, req, params)
