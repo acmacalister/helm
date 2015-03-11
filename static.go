@@ -16,6 +16,7 @@ func Static(w http.ResponseWriter, r *http.Request, params url.Values) bool {
 	if strings.HasSuffix(r.URL.Path, "/") {
 		file = file + "index.html"
 	}
+
 	if _, err := os.Stat(file); err != nil {
 		return true // bail out.
 	}

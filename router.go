@@ -1,9 +1,12 @@
 package helm
 
 import (
+	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
+	"time"
 )
 
 const (
@@ -29,6 +32,7 @@ type Router struct {
 	tree        *node
 	rootHandler Handle
 	middleware  []Middleware
+	l           *log.Logger
 }
 
 // New creates a new router. Take the root/fall through route
@@ -36,7 +40,7 @@ type Router struct {
 // you have to specific one.
 func New(rootHandler Handle) *Router {
 	node := node{component: "/", isNamedParam: false, methods: make(map[string]*route)}
-	return &Router{tree: &node, rootHandler: rootHandler}
+	return &Router{tree: &node, rootHandler: rootHandler, l: log.New(os.Stdout, "[helm] ", 0)}
 }
 
 // Handle takes an http handler, method and pattern for a route.
@@ -94,18 +98,24 @@ func runMiddleware(w http.ResponseWriter, req *http.Request, params url.Values, 
 
 // Needed by "net/http" to handle http requests and be a mux to http.ListenAndServe.
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	start := time.Now()
+	r.l.Printf("Started %s %s", req.Method, req.URL.Path)
+	cw := responseWriter{w, 200}
+
 	req.ParseForm()
 	params := req.Form
-	if !runMiddleware(w, req, params, r.middleware...) {
+	if !runMiddleware(&cw, req, params, r.middleware...) {
 		return // end the chain.
 	}
 	node, _ := r.tree.traverse(strings.Split(req.URL.Path, "/")[1:], params)
 	if handler := node.methods[req.Method]; handler != nil {
-		if !runMiddleware(w, req, params, handler.middleware...) {
+		if !runMiddleware(&cw, req, params, handler.middleware...) {
 			return
 		}
-		handler.handler(w, req, params)
+		handler.handler(&cw, req, params)
 	} else {
-		r.rootHandler(w, req, params)
+		r.rootHandler(&cw, req, params)
 	}
+
+	r.l.Printf("Completed %d %s in %v", cw.status, http.StatusText(cw.status), time.Since(start))
 }

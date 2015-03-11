@@ -103,7 +103,6 @@ There are already a number of great routers and middleware out there for Go, but
 ## TODOs
 
 - [ ] Add Unit Tests
-- [ ] Add some handy default middleware. (static, logging, etc)
 - [ ] Add support for something like the express.js `all` method.
 
 ## Contributing

@@ -9,8 +9,8 @@ import (
 )
 
 func main() {
-	r := helm.New(FallThrough)                                              // Our fallthrough route.
-	r.AddMiddleware(FooMiddleware, BarMiddleware, helm.Static, helm.Logger) // add global/router level middleware to run on every route.
+	r := helm.New(FallThrough)                                 // Our fallthrough route.
+	r.AddMiddleware(FooMiddleware, BarMiddleware, helm.Static) // add global/router level middleware to run on every route.
 	r.Handle("GET", "/", Root)
 	r.Handle("GET", "/users", Users, AuthMiddleware) // local/route specific middleware that only runs on this route.
 	r.GET("/users/edit", Root)
@@ -44,7 +44,8 @@ func FallThrough(w http.ResponseWriter, r *http.Request, params url.Values) {
 }
 
 func Root(w http.ResponseWriter, r *http.Request, params url.Values) {
-	fmt.Fprint(w, "Root!\n")
+	w.WriteHeader(200)
+	w.Write([]byte("Root!"))
 }
 
 func Users(w http.ResponseWriter, r *http.Request, params url.Values) {
