@@ -8,7 +8,7 @@ import (
 // route is a handler for an HTTP verb, plus it's middleware (if any).
 type route struct {
 	handler    Handle
-	middleware []Handle
+	middleware []Middleware
 }
 
 // node represents a struct of each node in the tree.
@@ -22,7 +22,7 @@ type node struct {
 // addNode - adds a node to our tree. Will add multiple nodes if path
 // can be broken up into multiple components. Those nodes will have no
 // handler implemented and will fall through to the default handler.
-func (n *node) addNode(method, path string, handler Handle, middleware ...Handle) {
+func (n *node) addNode(method, path string, handler Handle, middleware ...Middleware) {
 	components := strings.Split(path, "/")[1:]
 	count := len(components)
 

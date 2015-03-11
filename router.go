@@ -16,13 +16,19 @@ const (
 )
 
 /// Handle is just like "net/http" Handlers, only takes params.
-type Handle func(http.ResponseWriter, *http.Request, url.Values) bool
+type Handle func(http.ResponseWriter, *http.Request, url.Values)
+
+/// Middleware just like the Handle type, but has a boolean return. True
+/// means to keep processing the rest of the middleware chain, false means end.
+/// If you return false to end the request-response cycle you MUST
+// write something back to the client, otherwise it will be left hanging.
+type Middleware func(http.ResponseWriter, *http.Request, url.Values) bool
 
 // Router name says it all.
 type Router struct {
 	tree        *node
 	rootHandler Handle
-	middleware  []Handle
+	middleware  []Middleware
 }
 
 // New creates a new router. Take the root/fall through route
@@ -34,7 +40,7 @@ func New(rootHandler Handle) *Router {
 }
 
 // Handle takes an http handler, method and pattern for a route.
-func (r *Router) Handle(method, path string, handler Handle, middleware ...Handle) {
+func (r *Router) Handle(method, path string, handler Handle, middleware ...Middleware) {
 	if path[0] != '/' {
 		panic("Path has to start with a /.")
 	}
@@ -42,54 +48,57 @@ func (r *Router) Handle(method, path string, handler Handle, middleware ...Handl
 }
 
 // GET same as Handle only the method is already implied.
-func (r *Router) GET(path string, handler Handle, middleware ...Handle) {
+func (r *Router) GET(path string, handler Handle, middleware ...Middleware) {
 	r.Handle(GET, path, handler, middleware...)
 }
 
 // HEAD same as Handle only the method is already implied.
-func (r *Router) HEAD(path string, handler Handle, middleware ...Handle) {
+func (r *Router) HEAD(path string, handler Handle, middleware ...Middleware) {
 	r.Handle(HEAD, path, handler, middleware...)
 }
 
 // POST same as Handle only the method is already implied.
-func (r *Router) POST(path string, handler Handle, middleware ...Handle) {
+func (r *Router) POST(path string, handler Handle, middleware ...Middleware) {
 	r.Handle(POST, path, handler, middleware...)
 }
 
 // PUT same as Handle only the method is already implied.
-func (r *Router) PUT(path string, handler Handle, middleware ...Handle) {
+func (r *Router) PUT(path string, handler Handle, middleware ...Middleware) {
 	r.Handle(PUT, path, handler, middleware...)
 }
 
 // PATCH same as Handle only the method is already implied.
-func (r *Router) PATCH(path string, handler Handle, middleware ...Handle) { // might make this and put one.
+func (r *Router) PATCH(path string, handler Handle, middleware ...Middleware) { // might make this and put one.
 	r.Handle(PATCH, path, handler, middleware...)
 }
 
 // DELETE same as Handle only the method is already implied.
-func (r *Router) DELETE(path string, handler Handle, middleware ...Handle) {
+func (r *Router) DELETE(path string, handler Handle, middleware ...Middleware) {
 	r.Handle(DELETE, path, handler, middleware...)
 }
 
 // Add Middleware adds middleware to all of the routes.
-func (r *Router) AddMiddleware(middleware ...Handle) {
+func (r *Router) AddMiddleware(middleware ...Middleware) {
 	r.middleware = append(r.middleware, middleware...)
 }
 
 // runMiddleware loops over the slice of middleware and call to each of the middleware handlers.
-func runMiddleware(w http.ResponseWriter, req *http.Request, params url.Values, middleware ...Handle) {
+func runMiddleware(w http.ResponseWriter, req *http.Request, params url.Values, middleware ...Middleware) bool {
 	for _, m := range middleware {
 		if !m(w, req, params) {
-			break // the middleware returned false, so end processing the chain.
+			return false // the middleware returned false, so end processing the chain.
 		}
 	}
+	return true
 }
 
 // Needed by "net/http" to handle http requests and be a mux to http.ListenAndServe.
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
 	params := req.Form
-	runMiddleware(w, req, params, r.middleware...)
+	if !runMiddleware(w, req, params, r.middleware...) {
+		return // end the chain.
+	}
 	node, _ := r.tree.traverse(strings.Split(req.URL.Path, "/")[1:], params)
 	if handler := node.methods[req.Method]; handler != nil {
 		runMiddleware(w, req, params, handler.middleware...)

@@ -20,6 +20,9 @@ func main() {
 	http.ListenAndServe(":8080", r) // use our router as the mux!
 }
 
+// Notice the Middleware has a return type. True means go to the next middleware. False
+// means to stop right here. If you return false to end the request-response cycle you MUST
+// write something back to the client, otherwise it will be left hanging.
 func FooMiddleware(w http.ResponseWriter, r *http.Request, params url.Values) bool {
 	fmt.Println("Foo!")
 	return true
@@ -35,37 +38,30 @@ func AuthMiddleware(w http.ResponseWriter, r *http.Request, params url.Values) b
 	return true
 }
 
-func FallThrough(w http.ResponseWriter, r *http.Request, params url.Values) bool {
+func FallThrough(w http.ResponseWriter, r *http.Request, params url.Values) {
 	http.Error(w, "You done messed up A-aron", http.StatusNotFound)
-	return true
 }
 
-func Root(w http.ResponseWriter, r *http.Request, params url.Values) bool {
+func Root(w http.ResponseWriter, r *http.Request, params url.Values) {
 	fmt.Fprint(w, "Root!\n")
-	return true
 }
 
-func Users(w http.ResponseWriter, r *http.Request, params url.Values) bool {
+func Users(w http.ResponseWriter, r *http.Request, params url.Values) {
 	fmt.Fprint(w, "Users!\n")
-	return true
 }
 
-func UserShow(w http.ResponseWriter, r *http.Request, params url.Values) bool {
+func UserShow(w http.ResponseWriter, r *http.Request, params url.Values) {
 	fmt.Fprintf(w, "Hi %s", params["name"]) // Notice we are able to get the username from the url resource. Quite handy!
-	return true
 }
 
-func UserBlogShow(w http.ResponseWriter, r *http.Request, params url.Values) bool {
+func UserBlogShow(w http.ResponseWriter, r *http.Request, params url.Values) {
 	fmt.Fprintf(w, "This is %s Blog", params["name"])
-	return true
 }
 
-func Blogs(w http.ResponseWriter, r *http.Request, params url.Values) bool {
+func Blogs(w http.ResponseWriter, r *http.Request, params url.Values) {
 	fmt.Fprint(w, "Blogs!\n")
-	return true
 }
 
-func BlogShow(w http.ResponseWriter, r *http.Request, params url.Values) bool {
+func BlogShow(w http.ResponseWriter, r *http.Request, params url.Values) {
 	fmt.Fprintf(w, "Blog number: %s", params["id"])
-	return true
 }

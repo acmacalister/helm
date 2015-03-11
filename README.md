@@ -40,16 +40,22 @@ func main() {
   http.ListenAndServe(":8080", r) // use our router as the mux!
 }
 
-func FooMiddleware(w http.ResponseWriter, r *http.Request, params url.Values) {
+// Notice the Middleware has a return type. True means go to the next middleware. False
+// means to stop right here. If you return false to end the request-response cycle you MUST
+// write something back to the client, otherwise it will be left hanging.
+func FooMiddleware(w http.ResponseWriter, r *http.Request, params url.Values) bool {
   fmt.Println("Foo!")
+  return true
 }
 
-func BarMiddleware(w http.ResponseWriter, r *http.Request, params url.Values) {
+func BarMiddleware(w http.ResponseWriter, r *http.Request, params url.Values) bool {
   fmt.Println("Bar!")
+  return true
 }
 
-func AuthMiddleware(w http.ResponseWriter, r *http.Request, params url.Values) {
+func AuthMiddleware(w http.ResponseWriter, r *http.Request, params url.Values) bool {
   fmt.Println("Doing Auth here")
+  return true
 }
 
 func FallThrough(w http.ResponseWriter, r *http.Request, params url.Values) {
@@ -79,6 +85,7 @@ func Blogs(w http.ResponseWriter, r *http.Request, params url.Values) {
 func BlogShow(w http.ResponseWriter, r *http.Request, params url.Values) {
   fmt.Fprintf(w, "Blog number: %s", params["id"])
 }
+
 ```
 
 ## Docs
