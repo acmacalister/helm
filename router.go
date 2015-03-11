@@ -16,7 +16,7 @@ const (
 )
 
 /// Handle is just like "net/http" Handlers, only takes params.
-type Handle func(http.ResponseWriter, *http.Request, url.Values)
+type Handle func(http.ResponseWriter, *http.Request, url.Values) bool
 
 // Router name says it all.
 type Router struct {
@@ -79,7 +79,9 @@ func (r *Router) AddMiddleware(middleware ...Handle) {
 // runMiddleware loops over the slice of middleware and call to each of the middleware handlers.
 func runMiddleware(w http.ResponseWriter, req *http.Request, params url.Values, middleware ...Handle) {
 	for _, m := range middleware {
-		m(w, req, params)
+		if !m(w, req, params) {
+			break // the middleware returned false, so end processing the chain.
+		}
 	}
 }
 

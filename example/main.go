@@ -20,42 +20,52 @@ func main() {
 	http.ListenAndServe(":8080", r) // use our router as the mux!
 }
 
-func FooMiddleware(w http.ResponseWriter, r *http.Request, params url.Values) {
+func FooMiddleware(w http.ResponseWriter, r *http.Request, params url.Values) bool {
 	fmt.Println("Foo!")
+	return true
 }
 
-func BarMiddleware(w http.ResponseWriter, r *http.Request, params url.Values) {
+func BarMiddleware(w http.ResponseWriter, r *http.Request, params url.Values) bool {
 	fmt.Println("Bar!")
+	return true
 }
 
-func AuthMiddleware(w http.ResponseWriter, r *http.Request, params url.Values) {
+func AuthMiddleware(w http.ResponseWriter, r *http.Request, params url.Values) bool {
 	fmt.Println("Doing Auth here")
+	return true
 }
 
-func FallThrough(w http.ResponseWriter, r *http.Request, params url.Values) {
+func FallThrough(w http.ResponseWriter, r *http.Request, params url.Values) bool {
 	http.Error(w, "You done messed up A-aron", http.StatusNotFound)
+	return true
 }
 
-func Root(w http.ResponseWriter, r *http.Request, params url.Values) {
+func Root(w http.ResponseWriter, r *http.Request, params url.Values) bool {
 	fmt.Fprint(w, "Root!\n")
+	return true
 }
 
-func Users(w http.ResponseWriter, r *http.Request, params url.Values) {
+func Users(w http.ResponseWriter, r *http.Request, params url.Values) bool {
 	fmt.Fprint(w, "Users!\n")
+	return true
 }
 
-func UserShow(w http.ResponseWriter, r *http.Request, params url.Values) {
+func UserShow(w http.ResponseWriter, r *http.Request, params url.Values) bool {
 	fmt.Fprintf(w, "Hi %s", params["name"]) // Notice we are able to get the username from the url resource. Quite handy!
+	return true
 }
 
-func UserBlogShow(w http.ResponseWriter, r *http.Request, params url.Values) {
+func UserBlogShow(w http.ResponseWriter, r *http.Request, params url.Values) bool {
 	fmt.Fprintf(w, "This is %s Blog", params["name"])
+	return true
 }
 
-func Blogs(w http.ResponseWriter, r *http.Request, params url.Values) {
+func Blogs(w http.ResponseWriter, r *http.Request, params url.Values) bool {
 	fmt.Fprint(w, "Blogs!\n")
+	return true
 }
 
-func BlogShow(w http.ResponseWriter, r *http.Request, params url.Values) {
+func BlogShow(w http.ResponseWriter, r *http.Request, params url.Values) bool {
 	fmt.Fprintf(w, "Blog number: %s", params["id"])
+	return true
 }
