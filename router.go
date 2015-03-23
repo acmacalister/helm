@@ -105,11 +105,13 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
 	params := req.Form
 	if !runMiddleware(&cw, req, params, r.middleware...) {
+		r.l.Printf("Completed %d %s in %v", cw.status, http.StatusText(cw.status), time.Since(start))
 		return // end the chain.
 	}
 	node, _ := r.tree.traverse(strings.Split(req.URL.Path, "/")[1:], params)
 	if handler := node.methods[req.Method]; handler != nil {
 		if !runMiddleware(&cw, req, params, handler.middleware...) {
+			r.l.Printf("Completed %d %s in %v", cw.status, http.StatusText(cw.status), time.Since(start))
 			return
 		}
 		handler.handler(&cw, req, params)

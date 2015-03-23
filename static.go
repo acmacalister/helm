@@ -21,5 +21,5 @@ func Static(w http.ResponseWriter, r *http.Request, params url.Values) bool {
 		return true // bail out.
 	}
 	http.ServeFile(w, r, file)
-	return true
+	return false // Since we serve a file to the client, we can end the middleware and don't need to call a handler.
 }
