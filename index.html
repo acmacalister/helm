@@ -1,0 +1,182 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Helm by acmacalister</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Helm</h1>
+        <p>yet another golang router.</p>
+
+        <p class="view"><a href="https://github.com/acmacalister/helm">View the Project on GitHub <small>acmacalister/helm</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/acmacalister/helm/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/acmacalister/helm/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/acmacalister/helm">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>
+<a id="helm" class="anchor" href="#helm" aria-hidden="true"><span class="octicon octicon-link"></span></a>helm</h1>
+
+<p>helm is a simple, fast and minimalist router for writing web applications in Go. It builds on top of <code>net/http</code> and aims to be an elegant addition by removing some of the cumbersome work involved with using the default <code>net/http</code> mux.</p>
+
+<h2>
+<a id="features" class="anchor" href="#features" aria-hidden="true"><span class="octicon octicon-link"></span></a>Features</h2>
+
+<ul>
+<li>Simple API.</li>
+<li>Middleware support built right in.</li>
+<li>Great for building API servers.</li>
+<li>Minimalist codebase at just a few hundred LOC. Great way to learn how to write your own router.</li>
+<li>Inspired by Express.js.</li>
+</ul>
+
+<h2>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h2>
+
+<p><code>go get github.com/acmacalister/helm</code></p>
+
+<h2>
+<a id="example" class="anchor" href="#example" aria-hidden="true"><span class="octicon octicon-link"></span></a>Example</h2>
+
+<div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
+
+<span class="pl-k">import</span> (
+  <span class="pl-s"><span class="pl-pds">"</span>fmt<span class="pl-pds">"</span></span>
+  <span class="pl-s"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
+  <span class="pl-s"><span class="pl-pds">"</span>net/url<span class="pl-pds">"</span></span>
+
+  <span class="pl-s"><span class="pl-pds">"</span>github.com/acmacalister/helm<span class="pl-pds">"</span></span>
+)
+
+<span class="pl-k">func</span> <span class="pl-en">main</span>() {
+  <span class="pl-smi">r</span> <span class="pl-k">:=</span> helm.<span class="pl-c1">New</span>(FallThrough)                    <span class="pl-c">// Our fallthrough route.</span>
+  r.<span class="pl-c1">AddMiddleware</span>(FooMiddleware, BarMiddleware) <span class="pl-c">// add global/router level middleware to run on every route.</span>
+  r.<span class="pl-c1">Handle</span>(<span class="pl-s"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>/<span class="pl-pds">"</span></span>, Root)
+  r.<span class="pl-c1">Handle</span>(<span class="pl-s"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>/users<span class="pl-pds">"</span></span>, Users, AuthMiddleware)          <span class="pl-c">// local/route specific middleware that only runs on this route.</span>
+  r.<span class="pl-c1">Handle</span>(<span class="pl-s"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>/users/:name<span class="pl-pds">"</span></span>, UserShow, AuthMiddleware) <span class="pl-c">// same as above, but with a named param.</span>
+  r.<span class="pl-c1">Handle</span>(<span class="pl-s"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>/users/:name/blog/new<span class="pl-pds">"</span></span>, UserBlogShow, AuthMiddleware)
+  r.<span class="pl-c1">GET</span>(<span class="pl-s"><span class="pl-pds">"</span>/blogs<span class="pl-pds">"</span></span>, Blogs) <span class="pl-c">// convenience method for HTTP verb. Beside GET, there is the whole RESTful gang (POST, PUT, PATCH, DELETE, etc)</span>
+  r.<span class="pl-c1">GET</span>(<span class="pl-s"><span class="pl-pds">"</span>/blogs/:id<span class="pl-pds">"</span></span>, BlogShow)
+  http.<span class="pl-c1">ListenAndServe</span>(<span class="pl-s"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, r) <span class="pl-c">// use our router as the mux!</span>
+}
+
+<span class="pl-c">// Notice the Middleware has a return type. True means go to the next middleware. False</span>
+<span class="pl-c">// means to stop right here. If you return false to end the request-response cycle you MUST</span>
+<span class="pl-c">// write something back to the client, otherwise it will be left hanging.</span>
+<span class="pl-k">func</span> <span class="pl-en">FooMiddleware</span>(<span class="pl-v">w</span> <span class="pl-v">http</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">http</span>.<span class="pl-v">Request</span>, <span class="pl-v">params</span> <span class="pl-v">url</span>.<span class="pl-v">Values</span>) <span class="pl-v">bool</span> {
+  fmt.<span class="pl-c1">Println</span>(<span class="pl-s"><span class="pl-pds">"</span>Foo!<span class="pl-pds">"</span></span>)
+  <span class="pl-k">return</span> <span class="pl-c1">true</span>
+}
+
+<span class="pl-k">func</span> <span class="pl-en">BarMiddleware</span>(<span class="pl-v">w</span> <span class="pl-v">http</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">http</span>.<span class="pl-v">Request</span>, <span class="pl-v">params</span> <span class="pl-v">url</span>.<span class="pl-v">Values</span>) <span class="pl-v">bool</span> {
+  fmt.<span class="pl-c1">Println</span>(<span class="pl-s"><span class="pl-pds">"</span>Bar!<span class="pl-pds">"</span></span>)
+  <span class="pl-k">return</span> <span class="pl-c1">true</span>
+}
+
+<span class="pl-k">func</span> <span class="pl-en">AuthMiddleware</span>(<span class="pl-v">w</span> <span class="pl-v">http</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">http</span>.<span class="pl-v">Request</span>, <span class="pl-v">params</span> <span class="pl-v">url</span>.<span class="pl-v">Values</span>) <span class="pl-v">bool</span> {
+  fmt.<span class="pl-c1">Println</span>(<span class="pl-s"><span class="pl-pds">"</span>Doing Auth here<span class="pl-pds">"</span></span>)
+  <span class="pl-k">return</span> <span class="pl-c1">true</span>
+}
+
+<span class="pl-k">func</span> <span class="pl-en">FallThrough</span>(<span class="pl-v">w</span> <span class="pl-v">http</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">http</span>.<span class="pl-v">Request</span>, <span class="pl-v">params</span> <span class="pl-v">url</span>.<span class="pl-v">Values</span>) {
+  http.<span class="pl-c1">Error</span>(w, <span class="pl-s"><span class="pl-pds">"</span>You done messed up A-aron<span class="pl-pds">"</span></span>, http.<span class="pl-smi">StatusNotFound</span>)
+}
+
+<span class="pl-k">func</span> <span class="pl-en">Root</span>(<span class="pl-v">w</span> <span class="pl-v">http</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">http</span>.<span class="pl-v">Request</span>, <span class="pl-v">params</span> <span class="pl-v">url</span>.<span class="pl-v">Values</span>) {
+  fmt.<span class="pl-c1">Fprint</span>(w, <span class="pl-s"><span class="pl-pds">"</span>Root!<span class="pl-cce">\n</span><span class="pl-pds">"</span></span>)
+}
+
+<span class="pl-k">func</span> <span class="pl-en">Users</span>(<span class="pl-v">w</span> <span class="pl-v">http</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">http</span>.<span class="pl-v">Request</span>, <span class="pl-v">params</span> <span class="pl-v">url</span>.<span class="pl-v">Values</span>) {
+  fmt.<span class="pl-c1">Fprint</span>(w, <span class="pl-s"><span class="pl-pds">"</span>Users!<span class="pl-cce">\n</span><span class="pl-pds">"</span></span>)
+}
+
+<span class="pl-k">func</span> <span class="pl-en">UserShow</span>(<span class="pl-v">w</span> <span class="pl-v">http</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">http</span>.<span class="pl-v">Request</span>, <span class="pl-v">params</span> <span class="pl-v">url</span>.<span class="pl-v">Values</span>) {
+  fmt.<span class="pl-c1">Fprintf</span>(w, <span class="pl-s"><span class="pl-pds">"</span>Hi <span class="pl-c1">%s</span><span class="pl-pds">"</span></span>, params[<span class="pl-s"><span class="pl-pds">"</span>name<span class="pl-pds">"</span></span>]) <span class="pl-c">// Notice we are able to get the username from the url resource. Quite handy!</span>
+}
+
+<span class="pl-k">func</span> <span class="pl-en">UserBlogShow</span>(<span class="pl-v">w</span> <span class="pl-v">http</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">http</span>.<span class="pl-v">Request</span>, <span class="pl-v">params</span> <span class="pl-v">url</span>.<span class="pl-v">Values</span>) {
+  fmt.<span class="pl-c1">Fprintf</span>(w, <span class="pl-s"><span class="pl-pds">"</span>This is <span class="pl-c1">%s</span> Blog<span class="pl-pds">"</span></span>, params[<span class="pl-s"><span class="pl-pds">"</span>name<span class="pl-pds">"</span></span>])
+}
+
+<span class="pl-k">func</span> <span class="pl-en">Blogs</span>(<span class="pl-v">w</span> <span class="pl-v">http</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">http</span>.<span class="pl-v">Request</span>, <span class="pl-v">params</span> <span class="pl-v">url</span>.<span class="pl-v">Values</span>) {
+  fmt.<span class="pl-c1">Fprint</span>(w, <span class="pl-s"><span class="pl-pds">"</span>Blogs!<span class="pl-cce">\n</span><span class="pl-pds">"</span></span>)
+}
+
+<span class="pl-k">func</span> <span class="pl-en">BlogShow</span>(<span class="pl-v">w</span> <span class="pl-v">http</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">http</span>.<span class="pl-v">Request</span>, <span class="pl-v">params</span> <span class="pl-v">url</span>.<span class="pl-v">Values</span>) {
+  fmt.<span class="pl-c1">Fprintf</span>(w, <span class="pl-s"><span class="pl-pds">"</span>Blog number: <span class="pl-c1">%s</span><span class="pl-pds">"</span></span>, params[<span class="pl-s"><span class="pl-pds">"</span>id<span class="pl-pds">"</span></span>])
+}
+</pre></div>
+
+<h2>
+<a id="docs" class="anchor" href="#docs" aria-hidden="true"><span class="octicon octicon-link"></span></a>Docs</h2>
+
+<p><a href="http://godoc.org/github.com/acmacalister/helm">godoc</a></p>
+
+<h2>
+<a id="example-project" class="anchor" href="#example-project" aria-hidden="true"><span class="octicon octicon-link"></span></a>Example Project</h2>
+
+<p>Check out the example directory for a simple example.</p>
+
+<h2>
+<a id="why" class="anchor" href="#why" aria-hidden="true"><span class="octicon octicon-link"></span></a>Why?</h2>
+
+<p>There are already a number of great routers and middleware out there for Go, but since most of them are either middlware or a router, getting them to work together felt clumsy to me. Helm's goal is to provide a minimalist set of tools to make building web services a breeze.</p>
+
+<h2>
+<a id="todos" class="anchor" href="#todos" aria-hidden="true"><span class="octicon octicon-link"></span></a>TODOs</h2>
+
+<ul>
+<li>[ ] Add Unit Tests</li>
+<li>[ ] Add support for something like the express.js <code>all</code> method.</li>
+</ul>
+
+<h2>
+<a id="contributing" class="anchor" href="#contributing" aria-hidden="true"><span class="octicon octicon-link"></span></a>Contributing</h2>
+
+<p>If you are interested on helping out or have a feature suggestion, feel free to open an issue or do a PR.</p>
+
+<h2>
+<a id="additional-middleware" class="anchor" href="#additional-middleware" aria-hidden="true"><span class="octicon octicon-link"></span></a>Additional middleware</h2>
+
+<p>helm's middleware is quite simple as it is standard <code>net/http</code> functions that provides pre-parsed params. If you would like would to include a middleware that is compatibility with helm, open an issue and we will get it added.</p>
+
+<h2>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span class="octicon octicon-link"></span></a>License</h2>
+
+<p>MIT</p>
+
+<h2>
+<a id="contact" class="anchor" href="#contact" aria-hidden="true"><span class="octicon octicon-link"></span></a>Contact</h2>
+
+<h3>
+<a id="austin-cherry" class="anchor" href="#austin-cherry" aria-hidden="true"><span class="octicon octicon-link"></span></a>Austin Cherry</h3>
+
+<ul>
+<li><a href="https://github.com/acmacalister">https://github.com/acmacalister</a></li>
+<li><a href="http://twitter.com/acmacalister">http://twitter.com/acmacalister</a></li>
+<li><a href="http://austincherry.me">http://austincherry.me</a></li>
+</ul>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/acmacalister">acmacalister</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
