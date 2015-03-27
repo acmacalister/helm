@@ -81,7 +81,7 @@ func (r *Router) DELETE(path string, handler Handle, middleware ...Middleware) {
 	r.Handle(deleteh, path, handler, middleware...)
 }
 
-// Add Middleware adds middleware to all of the routes.
+// AddMiddleware adds middleware to all of the routes.
 func (r *Router) AddMiddleware(middleware ...Middleware) {
 	r.middleware = append(r.middleware, middleware...)
 }
