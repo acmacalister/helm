@@ -10,20 +10,20 @@ import (
 )
 
 const (
-	GET    = "GET"
-	HEAD   = "HEAD"
-	POST   = "POST"
-	PUT    = "PUT"
-	PATCH  = "PATCH"
-	DELETE = "DELETE"
+	get     = "GET"
+	head    = "HEAD"
+	post    = "POST"
+	put     = "PUT"
+	patch   = "PATCH"
+	deleteh = "DELETE"
 )
 
-/// Handle is just like "net/http" Handlers, only takes params.
+// Handle is just like "net/http" Handlers, only takes params.
 type Handle func(http.ResponseWriter, *http.Request, url.Values)
 
-/// Middleware just like the Handle type, but has a boolean return. True
-/// means to keep processing the rest of the middleware chain, false means end.
-/// If you return false to end the request-response cycle you MUST
+// Middleware is just like the Handle type, but has a boolean return. True
+// means to keep processing the rest of the middleware chain, false means end.
+// If you return false to end the request-response cycle you MUST
 // write something back to the client, otherwise it will be left hanging.
 type Middleware func(http.ResponseWriter, *http.Request, url.Values) bool
 
@@ -53,37 +53,43 @@ func (r *Router) Handle(method, path string, handler Handle, middleware ...Middl
 
 // GET same as Handle only the method is already implied.
 func (r *Router) GET(path string, handler Handle, middleware ...Middleware) {
-	r.Handle(GET, path, handler, middleware...)
+	r.Handle(get, path, handler, middleware...)
 }
 
 // HEAD same as Handle only the method is already implied.
 func (r *Router) HEAD(path string, handler Handle, middleware ...Middleware) {
-	r.Handle(HEAD, path, handler, middleware...)
+	r.Handle(head, path, handler, middleware...)
 }
 
 // POST same as Handle only the method is already implied.
 func (r *Router) POST(path string, handler Handle, middleware ...Middleware) {
-	r.Handle(POST, path, handler, middleware...)
+	r.Handle(post, path, handler, middleware...)
 }
 
 // PUT same as Handle only the method is already implied.
 func (r *Router) PUT(path string, handler Handle, middleware ...Middleware) {
-	r.Handle(PUT, path, handler, middleware...)
+	r.Handle(put, path, handler, middleware...)
 }
 
 // PATCH same as Handle only the method is already implied.
 func (r *Router) PATCH(path string, handler Handle, middleware ...Middleware) { // might make this and put one.
-	r.Handle(PATCH, path, handler, middleware...)
+	r.Handle(patch, path, handler, middleware...)
 }
 
 // DELETE same as Handle only the method is already implied.
 func (r *Router) DELETE(path string, handler Handle, middleware ...Middleware) {
-	r.Handle(DELETE, path, handler, middleware...)
+	r.Handle(deleteh, path, handler, middleware...)
 }
 
 // Add Middleware adds middleware to all of the routes.
 func (r *Router) AddMiddleware(middleware ...Middleware) {
 	r.middleware = append(r.middleware, middleware...)
+}
+
+// Run is a simple wrapper around http.ListenAndServe.
+func (r *Router) Run(address string) {
+	r.l.Println("Running on", address)
+	http.ListenAndServe(address, r)
 }
 
 // runMiddleware loops over the slice of middleware and call to each of the middleware handlers.

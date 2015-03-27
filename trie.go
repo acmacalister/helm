@@ -65,9 +65,8 @@ func (n *node) traverse(components []string, params url.Values) (*node, string) 
 				next := components[1:]
 				if len(next) > 0 { // http://xkcd.com/1270/
 					return child.traverse(next, params) // tail recursion is it's own reward.
-				} else {
-					return child, component
 				}
+				return child, component
 			}
 		}
 	}

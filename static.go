@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// Static is a builtin middleware for serving static assets out of the public directory.
 func Static(w http.ResponseWriter, r *http.Request, params url.Values) bool {
 	if r.Method != "GET" && r.Method != "HEAD" {
 		return true // bail out.
