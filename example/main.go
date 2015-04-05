@@ -9,8 +9,8 @@ import (
 )
 
 func main() {
-	r := helm.New(fallThrough)                                 // Our fallthrough route.
-	r.AddMiddleware(fooMiddleware, barMiddleware, helm.Static) // add global/router level middleware to run on every route.
+	r := helm.New(fallThrough)                         // Our fallthrough route.
+	r.Use(fooMiddleware, barMiddleware, helm.Static()) // add global/router level middleware to run on every route.
 	r.Handle("GET", "/", root)
 	r.Handle("GET", "/users", users, authMiddleware) // local/route specific middleware that only runs on this route.
 	r.GET("/users/edit", root)
