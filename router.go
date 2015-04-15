@@ -29,18 +29,20 @@ type Middleware func(http.ResponseWriter, *http.Request, url.Values) bool
 
 // Router name says it all.
 type Router struct {
-	tree        *node
-	rootHandler Handle
-	middleware  []Middleware
-	l           *log.Logger
+	tree           *node
+	rootHandler    Handle
+	middleware     []Middleware
+	l              *log.Logger
+	LoggingEnabled bool
 }
 
 // New creates a new router. Take the root/fall through route
 // like how the default mux works. Only difference is in this case,
 // you have to specific one.
 func New(rootHandler Handle) *Router {
+
 	node := node{component: "/", isNamedParam: false, methods: make(map[string]*route)}
-	return &Router{tree: &node, rootHandler: rootHandler, l: log.New(os.Stdout, "[helm] ", 0)}
+	return &Router{tree: &node, rootHandler: rootHandler, l: log.New(os.Stdout, "[helm] ", 0), LoggingEnabled: true}
 }
 
 // Handle takes an http handler, method and pattern for a route.
@@ -104,26 +106,26 @@ func runMiddleware(w http.ResponseWriter, req *http.Request, params url.Values, 
 
 // Needed by "net/http" to handle http requests and be a mux to http.ListenAndServe.
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	start := time.Now()
-	r.l.Printf("Started %s %s", req.Method, req.URL.Path)
-	cw := responseWriter{w, 200}
+	cw := w
+	if r.LoggingEnabled {
+		start := time.Now()
+		r.l.Printf("Started %s %s", req.Method, req.URL.Path)
+		cw := &responseWriter{w, 200}
+		defer r.l.Printf("Completed %d %s in %v", cw.status, http.StatusText(cw.status), time.Since(start))
+	}
 
 	req.ParseForm()
 	params := req.Form
-	if !runMiddleware(&cw, req, params, r.middleware...) {
-		r.l.Printf("Completed %d %s in %v", cw.status, http.StatusText(cw.status), time.Since(start))
+	if !runMiddleware(cw, req, params, r.middleware...) {
 		return // end the chain.
 	}
 	node, _ := r.tree.traverse(strings.Split(req.URL.Path, "/")[1:], params)
 	if handler := node.methods[req.Method]; handler != nil {
-		if !runMiddleware(&cw, req, params, handler.middleware...) {
-			r.l.Printf("Completed %d %s in %v", cw.status, http.StatusText(cw.status), time.Since(start))
+		if !runMiddleware(cw, req, params, handler.middleware...) {
 			return
 		}
-		handler.handler(&cw, req, params)
+		handler.handler(cw, req, params)
 	} else {
-		r.rootHandler(&cw, req, params)
+		r.rootHandler(cw, req, params)
 	}
-
-	r.l.Printf("Completed %d %s in %v", cw.status, http.StatusText(cw.status), time.Since(start))
 }
