@@ -108,10 +108,13 @@ func runMiddleware(w http.ResponseWriter, req *http.Request, params url.Values, 
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	cw := w
 	if r.LoggingEnabled {
-		start := time.Now()
 		r.l.Printf("Started %s %s", req.Method, req.URL.Path)
-		cw := &responseWriter{w, 200}
-		defer r.l.Printf("Completed %d %s in %v", cw.status, http.StatusText(cw.status), time.Since(start))
+		cw = &responseWriter{w, 200}
+		start := time.Now()
+		defer func(time.Time) {
+			status := cw.(*responseWriter).status
+			r.l.Printf("Completed %d %s in %v", status, http.StatusText(status), time.Since(start))
+		}(start)
 	}
 
 	req.ParseForm()
