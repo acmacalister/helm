@@ -18,6 +18,7 @@ func main() {
 	r.Handle("GET", "/users/:name/blog/new", userBlogShow, authMiddleware)
 	r.GET("/blogs", blogs) // convenience method for HTTP verb. Beside GET, there is the whole RESTful gang (POST, PUT, PATCH, DELETE, etc)
 	r.GET("/blogs/:id", blogShow)
+	r.POST("/test", test)
 	r.Run(":8080")
 }
 
@@ -41,6 +42,11 @@ func authMiddleware(w http.ResponseWriter, r *http.Request, params url.Values) b
 
 func fallThrough(w http.ResponseWriter, r *http.Request, params url.Values) {
 	http.Error(w, "You done messed up A-aron", http.StatusNotFound)
+}
+
+func test(w http.ResponseWriter, r *http.Request, params url.Values) {
+	fmt.Println(params)
+	fmt.Fprintf(w, "Hi there")
 }
 
 func root(w http.ResponseWriter, r *http.Request, params url.Values) {

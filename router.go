@@ -117,7 +117,10 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		}(start)
 	}
 
-	req.ParseForm()
+	err := req.ParseMultipartForm(2 * 1024 * 1024) // 2MB. Should probably make this configurable...
+	if err != nil {
+		r.l.Printf("ERROR parsing form " + err.Error())
+	}
 	params := req.Form
 	if !runMiddleware(cw, req, params, r.middleware...) {
 		return // end the chain.
