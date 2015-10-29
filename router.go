@@ -118,7 +118,7 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		}(start)
 	}
 
-	req.ParseForm()
+	req.ParseMultipartForm(10 * 1024 * 1024) // 10MB. Should probably make this configurable...
 	params := req.Form
 	if !runMiddleware(cw, req, params, r.middleware...) {
 		return // end the chain.

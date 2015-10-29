@@ -46,6 +46,11 @@ func fallThrough(w http.ResponseWriter, r *http.Request, params url.Values) {
 	http.Error(w, "You done messed up A-aron", http.StatusNotFound)
 }
 
+func test(w http.ResponseWriter, r *http.Request, params url.Values) {
+	fmt.Println(params)
+	fmt.Fprintf(w, "Hi there")
+}
+
 func root(w http.ResponseWriter, r *http.Request, params url.Values) {
 	w.WriteHeader(200)
 	w.Write([]byte("Root!"))
