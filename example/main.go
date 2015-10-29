@@ -8,16 +8,16 @@ import (
 	"github.com/acmacalister/helm"
 )
 
+type user struct {
+	name string
+}
+
 func main() {
 	r := helm.New(fallThrough)                         // Our fallthrough route.
 	r.Use(fooMiddleware, barMiddleware, helm.Static()) // add global/router level middleware to run on every route.
 	r.Handle("GET", "/", root)
 	r.Handle("GET", "/users", users, authMiddleware) // local/route specific middleware that only runs on this route.
 	r.GET("/users/edit", root)
-	r.Handle("GET", "/users/:name", userShow, authMiddleware) // same as above, but with a named param.
-	r.Handle("GET", "/users/:name/blog/new", userBlogShow, authMiddleware)
-	r.GET("/blogs", blogs) // convenience method for HTTP verb. Beside GET, there is the whole RESTful gang (POST, PUT, PATCH, DELETE, etc)
-	r.GET("/blogs/:id", blogShow)
 	r.Run(":8080")
 }
 
@@ -36,6 +36,9 @@ func barMiddleware(w http.ResponseWriter, r *http.Request, params url.Values) bo
 
 func authMiddleware(w http.ResponseWriter, r *http.Request, params url.Values) bool {
 	fmt.Println("Doing Auth here")
+	u := user{name: "Bob"}
+	fmt.Printf("%x\n", &u.name)
+	helm.Set(r, "user", u)
 	return true
 }
 
@@ -49,21 +52,12 @@ func root(w http.ResponseWriter, r *http.Request, params url.Values) {
 }
 
 func users(w http.ResponseWriter, r *http.Request, params url.Values) {
+	u := helm.Get(r, "user").(user)
+	fmt.Printf("%x\n", &u.name)
+	fmt.Println("user is: ", u.name)
 	fmt.Fprint(w, "Users!\n")
 }
 
 func userShow(w http.ResponseWriter, r *http.Request, params url.Values) {
 	fmt.Fprintf(w, "Hi %s", params["name"]) // Notice we are able to get the username from the url resource. Quite handy!
-}
-
-func userBlogShow(w http.ResponseWriter, r *http.Request, params url.Values) {
-	fmt.Fprintf(w, "This is %s Blog", params["name"])
-}
-
-func blogs(w http.ResponseWriter, r *http.Request, params url.Values) {
-	fmt.Fprint(w, "Blogs!\n")
-}
-
-func blogShow(w http.ResponseWriter, r *http.Request, params url.Values) {
-	fmt.Fprintf(w, "Blog number: %s", params["id"])
 }

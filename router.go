@@ -106,6 +106,7 @@ func runMiddleware(w http.ResponseWriter, req *http.Request, params url.Values, 
 
 // Needed by "net/http" to handle http requests and be a mux to http.ListenAndServe.
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	defer clear(req)
 	cw := w
 	if r.LoggingEnabled {
 		r.l.Printf("Started %s %s", req.Method, req.URL.Path)
