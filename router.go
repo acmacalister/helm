@@ -137,13 +137,14 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 }
 
 func ValidateAndReturnParams(params url.Values, requiredParam []string) (map[string]string, error) {
+
 	paramValues := make(map[string]string)
 	for _, arg := range requiredParam {
 		if _, ok := params[arg]; !ok {
-			return nil, errors.New(fmt.Sprintf("Required param missing: %s\n", arg))
+			return nil, errors.New(fmt.Sprintf("Required parameter (%s) not valid", arg))
 		} else {
 			if params[arg][0] == "" {
-				return nil, errors.New(fmt.Sprintf("Required param missing: %s\n", arg))
+				return nil, errors.New(fmt.Sprintf("Required parameter (%s) not valid", arg))
 			} else {
 				paramValues[arg] = params[arg][0]
 			}
