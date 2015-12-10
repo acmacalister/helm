@@ -137,7 +137,6 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 }
 
 func ValidateAndReturnParams(params url.Values, requiredParam []string) (map[string]string, error) {
-
 	paramValues := make(map[string]string)
 	for _, arg := range requiredParam {
 		if _, ok := params[arg]; !ok {
