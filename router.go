@@ -1,10 +1,10 @@
 package helm
 
 import (
+	"io"
 	"log"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 	"time"
 )
@@ -40,9 +40,14 @@ type Router struct {
 // like how the default mux works. Only difference is in this case,
 // you have to specific one.
 func New(rootHandler Handle) *Router {
-
 	node := node{component: "/", isNamedParam: false, methods: make(map[string]*route)}
-	return &Router{tree: &node, rootHandler: rootHandler, l: log.New(os.Stdout, "[helm] ", 0), LoggingEnabled: true}
+	return &Router{tree: &node, rootHandler: rootHandler}
+}
+
+// EnableLogging sets logging to supplied writer.
+func (r *Router) EnableLogging(w io.Writer) {
+	r.l = log.New(w, "[helm] ", 0)
+	r.LoggingEnabled = true
 }
 
 // Handle takes an http handler, method and pattern for a route.

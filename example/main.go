@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 
 	"github.com/acmacalister/helm"
 )
@@ -18,6 +19,7 @@ func main() {
 	r.Handle("GET", "/", root)
 	r.Handle("GET", "/users", users, authMiddleware) // local/route specific middleware that only runs on this route.
 	r.GET("/users/edit", root)
+	r.EnableLogging(os.Stdout)
 	r.Run(":8080")
 }
 
