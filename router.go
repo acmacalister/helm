@@ -1,6 +1,8 @@
 package helm
 
 import (
+	"errors"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -34,6 +36,11 @@ type Router struct {
 	middleware     []Middleware
 	l              *log.Logger
 	LoggingEnabled bool
+}
+
+type Param struct {
+	Name     string
+	Required bool
 }
 
 // New creates a new router. Take the root/fall through route
@@ -137,4 +144,19 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	} else {
 		r.rootHandler(cw, req, params)
 	}
+}
+
+// ValidateParams is used for validating and sanizating params. Since HTTP params can have
+// same name for multiple params, if this happens it will just use the first one.
+func ValidateParams(params url.Values, desiredParams []Param) (map[string]string, error) {
+	paramValues := make(map[string]string)
+	for _, param := range desiredParams {
+		p, ok := params[param.Name]
+		if !ok && param.Required && p[0] != "" {
+			return nil, errors.New(fmt.Sprintf("Required parameter (%s) not valid", param.Name))
+		} else if ok {
+			paramValues[param.Name] = p[0]
+		}
+	}
+	return paramValues, nil
 }
