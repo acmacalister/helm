@@ -102,7 +102,9 @@ func (r *Router) Use(middleware ...Middleware) {
 
 // Run is a simple wrapper around http.ListenAndServe.
 func (r *Router) Run(address string) {
-	r.l.Println("Running on", address)
+	if r.LoggingEnabled {
+		r.l.Println("Running on", address)
+	}
 	http.ListenAndServe(address, r)
 }
 
