@@ -154,7 +154,7 @@ func ValidateParams(params url.Values, desiredParams []Param) (map[string]string
 	paramValues := make(map[string]string)
 	for _, param := range desiredParams {
 		p, ok := params[param.Name]
-		if !ok && param.Required || p[0] == "" && param.Required {
+		if !ok || p[0] == "" && param.Required {
 			return nil, errors.New(fmt.Sprintf("Required parameter (%s) not valid", param.Name))
 		} else if ok && p[0] != "" {
 			paramValues[param.Name] = p[0]
