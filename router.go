@@ -36,6 +36,7 @@ type Router struct {
 	middleware     []Middleware
 	l              *log.Logger
 	LoggingEnabled bool
+	URIVersion     string
 }
 
 type Param struct {
@@ -48,7 +49,7 @@ type Param struct {
 // you have to specific one.
 func New(rootHandler Handle) *Router {
 	node := node{component: "/", isNamedParam: false, methods: make(map[string]*route)}
-	return &Router{tree: &node, rootHandler: rootHandler}
+	return &Router{tree: &node, rootHandler: rootHandler, URIVersion: ""}
 }
 
 // EnableLogging sets logging to supplied writer.
@@ -62,7 +63,7 @@ func (r *Router) Handle(method, path string, handler Handle, middleware ...Middl
 	if path[0] != '/' {
 		panic("Path has to start with a /.")
 	}
-	r.tree.addNode(method, path, handler, middleware...)
+	r.tree.addNode(method, URIVersion+path, handler, middleware...)
 }
 
 // GET same as Handle only the method is already implied.
