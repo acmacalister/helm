@@ -63,7 +63,7 @@ func (r *Router) Handle(method, path string, handler Handle, middleware ...Middl
 	if path[0] != '/' {
 		panic("Path has to start with a /.")
 	}
-	r.tree.addNode(method, URIVersion+path, handler, middleware...)
+	r.tree.addNode(method, r.URIVersion+path, handler, middleware...)
 }
 
 // GET same as Handle only the method is already implied.
