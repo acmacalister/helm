@@ -102,11 +102,11 @@ func (r *Router) Use(middleware ...Middleware) {
 }
 
 // Run is a simple wrapper around http.ListenAndServe.
-func (r *Router) Run(address string) {
+func (r *Router) Run(address string) error {
 	if r.LoggingEnabled {
 		r.l.Println("Running on", address)
 	}
-	http.ListenAndServe(address, r)
+	return http.ListenAndServe(address, r)
 }
 
 // runMiddleware loops over the slice of middleware and call to each of the middleware handlers.
@@ -155,14 +155,13 @@ func ValidateParams(params url.Values, desiredParams []Param) (map[string]string
 	paramValues := make(map[string]string)
 	for _, param := range desiredParams {
 		p, ok := params[param.Name]
-		if param.Required && ok && p[0] != "" {
-			paramValues[param.Name] = p[0]			
-		} else if ok && p[0] != "" {
-			paramValues[param.Name] = p[0]
-		} else if param.Required {
+		if param.Required && (!ok || p[0] == "") {
 			return nil, errors.New(fmt.Sprintf("Required parameter (%s) not valid", param.Name))
-		}
+		} else if !ok || p[0] == "" {
+			continue		
+		} else {
+			paramValues[param.Name] = p[0]	
+		}		
 	}
 	return paramValues, nil
 }
-
