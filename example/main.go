@@ -8,18 +8,7 @@ import (
 	"github.com/acmacalister/helm"
 )
 
-type user struct {
-	name string
-}
-
-type server struct {
-	db string
-}
-
 func main() {
-	//s := server{db: "austin you are awesome!"}
-	// helm.NewStatic()
-
 	r := helm.New(fallThrough)                                         // Our fallthrough route.
 	r.Use(helm.NewLogger(os.Stdout, "[helm]"), auth, helm.NewStatic()) // add global/router level middleware to run on every route.
 	r.Handle("GET", "/", root, blah)
