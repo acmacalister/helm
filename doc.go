@@ -2,73 +2,56 @@
 //
 // For more information, see https://github.com/acmacalister/helm
 //
-//    package main
+// package main
 //
-//    import (
-//      "fmt"
-//      "net/http"
-//      "net/url"
+// import (
+// 	"fmt"
+// 	"net/http"
 //
-//      "github.com/acmacalister/helm"
-//    )
+// 	"github.com/acmacalister/helm"
+// )
 //
-//    func main() {
-//      r := helm.New(fallThrough)                         // Our fallthrough route.
-//      r.Use(fooMiddleware, barMiddleware, helm.Static()) // add global/router level middleware to run on every route.
-//      r.Handle("GET", "/", root)
-//      r.Handle("GET", "/users", users, authMiddleware) // local/route specific middleware that only runs on this route.
-//      r.GET("/users/edit", root)
-//      r.Handle("GET", "/users/:name", userShow, authMiddleware) // same as above, but with a named param.
-//      r.Handle("GET", "/users/:name/blog/new", userBlogShow, authMiddleware)
-//      r.GET("/blogs", blogs) // convenience method for HTTP verb. Beside GET, there is the whole RESTful gang (POST, PUT, PATCH, DELETE, etc)
-//      r.GET("/blogs/:id", blogShow)
-//      r.Run(":8080")
-//    }
+// type user struct {
+// 	name string
+// }
 //
-//    // Notice the Middleware has a return type. True means go to the next middleware. False
-//    // means to stop right here. If you return false to end the request-response cycle you MUST
-//    // write something back to the client, otherwise it will be left hanging.
-//    func fooMiddleware(w http.ResponseWriter, r *http.Request, params url.Values) bool {
-//      fmt.Println("Foo!")
-//      return true
-//    }
+// type server struct {
+// 	db string
+// }
 //
-//    func barMiddleware(w http.ResponseWriter, r *http.Request, params url.Values) bool {
-//      fmt.Println("Bar!")
-//      return true
-//    }
+// func main() {
+// 	//s := server{db: "austin you are awesome!"}
+// 	// helm.NewStatic()
 //
-//    func authMiddleware(w http.ResponseWriter, r *http.Request, params url.Values) bool {
-//      fmt.Println("Doing Auth here")
-//      return true
-//    }
+// 	r := helm.New(fallThrough) // Our fallthrough route.
+// 	r.Use(log, auth)           // add global/router level middleware to run on every route.
+// 	r.Handle("GET", "/", root, blah)
+// 	r.Run(":8080")
+// }
 //
-//    func fallThrough(w http.ResponseWriter, r *http.Request, params url.Values) {
-//      http.Error(w, "You done messed up A-aron", http.StatusNotFound)
-//    }
+// func log(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+// 	fmt.Println("Before")
+// 	next(w, r)
+// 	fmt.Println("After")
+// }
 //
-//    func root(w http.ResponseWriter, r *http.Request, params url.Values) {
-//      w.WriteHeader(200)
-//      w.Write([]byte("Root!"))
-//    }
+// func auth(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+// 	fmt.Println("Do sweet auth stuff")
+// 	next(w, r)
+// }
 //
-//    func users(w http.ResponseWriter, r *http.Request, params url.Values) {
-//      fmt.Fprint(w, "Users!\n")
-//    }
+// func blah(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+// 	fmt.Println("blah...")
+// 	next(w, r)
+// }
 //
-//    func userShow(w http.ResponseWriter, r *http.Request, params url.Values) {
-//      fmt.Fprintf(w, "Hi %s", params["name"]) // Notice we are able to get the username from the url resource. Quite handy!
-//    }
+// func fallThrough(w http.ResponseWriter, r *http.Request) {
+// 	http.Error(w, "You done messed up A-aron", http.StatusNotFound)
+// }
 //
-//    func userBlogShow(w http.ResponseWriter, r *http.Request, params url.Values) {
-//      fmt.Fprintf(w, "This is %s Blog", params["name"])
-//    }
-//
-//    func blogs(w http.ResponseWriter, r *http.Request, params url.Values) {
-//      fmt.Fprint(w, "Blogs!\n")
-//    }
-//
-//    func blogShow(w http.ResponseWriter, r *http.Request, params url.Values) {
-//      fmt.Fprintf(w, "Blog number: %s", params["id"])
-//    }
+// func root(w http.ResponseWriter, r *http.Request) {
+// 	fmt.Println("root!")
+// 	w.WriteHeader(200)
+// 	w.Write([]byte("Root!"))
+// }
 package helm

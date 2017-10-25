@@ -3,28 +3,31 @@ package helm
 import (
 	"encoding/json"
 	"encoding/xml"
-	"fmt"
 	"net/http"
 )
 
-func RespondWithJSON(w http.ResponseWriter, v interface{}, status int) {
+func RespondWithJSON(w http.ResponseWriter, v interface{}, status int) (int, error) {
 	json, err := json.Marshal(v)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("failed to marshal to json: %s", err), http.StatusInternalServerError)
-		return
+		return http.StatusInternalServerError, err
 	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	w.Write(json)
+
+	return http.StatusOK, nil
 }
 
-func RespondWithXML(w http.ResponseWriter, v interface{}, status int) {
+func RespondWithXML(w http.ResponseWriter, v interface{}, status int) (int, error) {
 	xml, err := xml.Marshal(v)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("failed to marshal to xml: %s", err), http.StatusInternalServerError)
-		return
+		return http.StatusInternalServerError, err
 	}
+
 	w.Header().Set("Content-Type", "application/xml")
 	w.WriteHeader(status)
 	w.Write(xml)
+
+	return http.StatusOK, nil
 }
