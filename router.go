@@ -136,7 +136,7 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	params := req.Form
 
 	node, _ := r.tree.traverse(strings.Split(req.URL.Path, "/")[1:], params)
-	req = contextSet(req, kparams, params) // set all the params we have collected.
+	req = ContextSet(req, kparams, params) // set all the params we have collected.
 
 	if h := node.methods[req.Method]; h != nil {
 		runMiddleware(w, req, buildMList(append(r.middleware, h.middleware...), h.handler))
@@ -145,18 +145,18 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func contextGet(r *http.Request, key interface{}) interface{} {
+func ContextGet(r *http.Request, key interface{}) interface{} {
 	return r.Context().Value(key)
 }
 
-func contextSet(r *http.Request, key, val interface{}) *http.Request {
+func ContextSet(r *http.Request, key, val interface{}) *http.Request {
 	if val == nil {
 		return r
 	}
 	return r.WithContext(context.WithValue(r.Context(), key, val))
 }
 
-func decodeFormData(r *http.Request, v interface{}) error {
+func DecodeFormData(r *http.Request, v interface{}) error {
 	contentType := r.Header.Get("Content-type")
 	if strings.Contains(contentType, "application/json") {
 		return json.NewDecoder(r.Body).Decode(v)
