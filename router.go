@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	cleaner "path"
 	"strings"
 
 	"github.com/gorilla/schema"
@@ -55,10 +56,11 @@ func New(rootHandler http.HandlerFunc) *Router {
 
 // Handle takes an http handler, method and pattern for a route.
 func (r *Router) Handle(method, path string, handler http.HandlerFunc, middleware ...HandlerFunc) {
-	if path[0] != '/' {
+	p := cleaner.Clean(r.URIVersion + path)
+	if p[0] != '/' {
 		panic("Path has to start with a /.")
 	}
-	r.tree.addNode(method, r.URIVersion+path, handler, middleware...)
+	r.tree.addNode(method, p, handler, middleware...)
 }
 
 // GET same as Handle only the method is already implied.
