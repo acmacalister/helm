@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"net/url"
 	cleaner "path"
 	"strings"
 
@@ -149,6 +150,12 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 func ContextGet(r *http.Request, key interface{}) interface{} {
 	return r.Context().Value(key)
+}
+
+func GetParams(r *http.Request) url.Values {
+	v := r.Context().Value(kparams)
+	values := v.(url.Values)
+	return values
 }
 
 func ContextSet(r *http.Request, key, val interface{}) *http.Request {
